@@ -378,3 +378,5 @@ input:focus, select:focus { outline: none; border-color: var(--correct); }
 .restore-table { width: 100%; border-collapse: collapse; margin: 6px 0 4px; font-size: 15px; }
 .restore-table th, .restore-table td { padding: 5px 4px; text-align: left; border-bottom: 1px solid var(--border); }
 .restore-table td:not(:first-child), .restore-table th:not(:first-child) { text-align: right; }
+
+.icon-btn svg.gear { fill: currentColor; stroke: none; width: 23px; height: 23px; }
