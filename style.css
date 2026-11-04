@@ -38,6 +38,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; height: 100%; }
 body {
   background: var(--bg);
@@ -190,7 +191,10 @@ button { font: inherit; color: inherit; cursor: pointer; }
   touch-action: manipulation;
   transition: background-color .2s;
 }
-.key.wide { flex-grow: 1.5; font-size: clamp(12px, 3.4vw, 15px); }
+.key.wide { font-size: clamp(14px, 4vw, 18px); }
+.key.back { font-size: clamp(16px, 4.6vw, 21px); }
+/* Leerraum zum Versetzen der Reihen; negativer Rand gleicht den Flex-Abstand aus */
+.kb-gap { flex: 0 1 0; min-width: 0; margin-right: -5px; }
 .key:active { filter: brightness(.88); }
 .key.correct { background: var(--correct); color: var(--on-color); }
 .key.present { background: var(--present); color: var(--on-color); }
@@ -225,7 +229,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .dlg {
   border: 0;
   border-radius: 18px;
-  padding: 22px 20px 20px;
+  padding: 18px 18px 20px;
   width: min(440px, calc(100vw - 24px));
   max-height: calc(100dvh - 24px);
   background: var(--surface);
@@ -235,16 +239,24 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .dlg::backdrop { background: rgba(10, 12, 20, .55); }
 .dlg[open] { animation: dlg-in .18s ease-out; }
 @keyframes dlg-in { from { opacity: 0; transform: translateY(14px); } }
-.dlg h2 { margin: 0 0 10px; font-size: 22px; }
+.dlg h2 { margin: 0 0 10px; font-size: 22px; line-height: 1.25; }
 .dlg h3 { margin: 16px 0 6px; font-size: 16px; }
 .dlg p, .dlg li { line-height: 1.45; }
 .dlg ul { padding-left: 20px; margin: 6px 0; }
 .dlg-close {
-  position: absolute; top: 8px; right: 10px;
-  width: 36px; height: 36px;
-  border: 0; background: transparent;
-  font-size: 28px; line-height: 1; color: var(--muted);
+  /* bleibt beim Scrollen oben rechts sichtbar; 44 × 44 px Tippfläche */
+  position: sticky; top: 0; z-index: 2;
+  float: right;
+  width: 44px; height: 44px;
+  margin: -8px -6px 4px 10px;
+  border: 0; border-radius: 50%;
+  background: var(--key);
+  color: var(--text);
+  font-size: 26px; line-height: 1;
+  display: grid; place-items: center;
+  touch-action: manipulation;
 }
+.dlg-close:active { filter: brightness(.88); }
 .small { font-size: 13px; color: var(--muted); }
 .c-correct { color: var(--correct); }
 .c-present { color: var(--present); }
@@ -333,3 +345,15 @@ input:focus, select:focus { outline: none; border-color: var(--correct); }
 .dlg a { color: var(--correct); }
 
 .source { text-align: center; margin: 0 0 4px; }
+
+.install-guide {
+  margin-top: 14px; padding: 12px 14px;
+  border: 2px solid var(--border); border-radius: 12px;
+  font-size: 15px; line-height: 1.45;
+}
+.install-guide ol { margin: 6px 0 6px; padding-left: 22px; }
+.install-guide li { padding: 2px 0; }
+.ios-share {
+  width: 20px; height: 20px; vertical-align: -4px;
+  fill: none; stroke: var(--correct); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}

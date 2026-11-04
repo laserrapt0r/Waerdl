@@ -4,11 +4,14 @@ import { HOCHDEUTSCH, HOCHDEUTSCH_SPERRE } from './words-de.js';
 import { createSchedule, dayFromDate } from './schedule.js';
 
 const $ = (sel) => document.querySelector(sel);
+// Tastatur auf einem Raster von 12 Einheiten: ⌫ rechts in der Mitte, OK breit rechts unten.
+// Zahlen = Leerraum (in Einheiten), damit die Reihen versetzt wie eine echte Tastatur liegen.
 const KEY_ROWS = [
-  [...'QWERTZUIOPÜ'],
-  [...'ASDFGHJKLÖÄ'],
-  ['ENTER', ...'YXCVBNMß', 'BACK'],
+  [0.5, ...'QWERTZUIOPÜ', 0.5],
+  [...'ASDFGHJKLÖÄ', 'BACK'],
+  [0.5, ...'YXCVBNMß', 'ENTER'],
 ];
+const KEY_WIDTH = { ENTER: 3.5, BACK: 1 };
 const HINT_AFTER = 3;
 
 // ---------- Speicher (robust gegen gesperrten localStorage) ----------
@@ -207,13 +210,21 @@ function buildKeyboard() {
     const row = document.createElement('div');
     row.className = 'kb-row';
     for (const k of keys) {
+      if (typeof k === 'number') {
+        const gap = document.createElement('span');
+        gap.className = 'kb-gap';
+        gap.style.flexGrow = String(k);
+        row.append(gap);
+        continue;
+      }
       const b = document.createElement('button');
       b.className = 'key';
       b.type = 'button';
       b.dataset.key = k;
       if (k === 'ENTER') { b.textContent = 'OK'; b.classList.add('wide'); b.setAttribute('aria-label', 'Wort abschicken'); }
-      else if (k === 'BACK') { b.textContent = '⌫'; b.classList.add('wide'); b.setAttribute('aria-label', 'Löschen'); }
+      else if (k === 'BACK') { b.textContent = '⌫'; b.classList.add('back'); b.setAttribute('aria-label', 'Löschen'); }
       else b.textContent = k;
+      if (KEY_WIDTH[k]) b.style.flexGrow = String(KEY_WIDTH[k]);
       row.append(b);
     }
     kb.append(row);
@@ -676,15 +687,46 @@ function initNotify() {
 // ---------- Installation (PWA) ----------
 let installEvent = null;
 function initInstall() {
-  const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
-  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if (!isStandalone && ios) {
-    $('#install-hint').textContent = 'Als App speichern: in Safari auf „Teilen“ tippen, dann „Zum Home-Bildschirm“.';
+  const ua = navigator.userAgent;
+  const isStandalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const ios = /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const ipad = /ipad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const macSafari = !ios && /Macintosh/.test(ua) && /Safari\//.test(ua) && !/Chrome|Chromium|Edg\/|Firefox|OPR\//.test(ua);
+  const androidFirefox = /Android/.test(ua) && /Firefox\//.test(ua);
+  const guide = $('#install-guide');
+  const shareIcon = '<svg class="ios-share" viewBox="0 0 24 24" aria-label="Teilen-Symbol"><path d="M12 3v12M7.5 7.5 12 3l4.5 4.5M5 11v9h14v-9"/></svg>';
+
+  // Der Knopf erscheint NUR, wenn der Browser die Installation per Knopf anbietet
+  // (Ereignis "beforeinstallprompt": Chrome, Edge, Samsung Internet …).
+  // Auf allen anderen Systemen gibt es stattdessen eine kurze Anleitung.
+  if (!isStandalone) {
+    if (ios) {
+      guide.innerHTML = `<b>Als App auf dem ${ipad ? 'iPad' : 'iPhone'} speichern:</b>
+        <ol>
+          <li>Unten${ipad ? ' bzw. oben' : ''} auf <b>Teilen</b> ${shareIcon} tippen</li>
+          <li><b>„Zum Home-Bildschirm“</b> wählen (ggf. in der Liste nach unten scrollen)</li>
+          <li>Oben rechts auf <b>„Hinzufügen“</b> tippen</li>
+        </ol>
+        <span class="small">Fehlt der Eintrag, öffne die Seite in Safari.</span>`;
+      guide.hidden = false;
+    } else if (macSafari) {
+      guide.innerHTML = '<b>Als App speichern:</b> in der Menüleiste <b>Ablage → „Zum Dock hinzufügen“</b> wählen.';
+      guide.hidden = false;
+    } else if (androidFirefox) {
+      guide.innerHTML = '<b>Als App speichern:</b> Menü <b>⋮</b> öffnen und <b>„Installieren“</b> bzw. „Zum Startbildschirm hinzufügen“ wählen.';
+      guide.hidden = false;
+    }
   }
   addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     installEvent = e;
+    guide.hidden = true;
     $('#btn-install').hidden = false;
+  });
+  addEventListener('appinstalled', () => {
+    installEvent = null;
+    $('#btn-install').hidden = true;
+    guide.hidden = true;
   });
   $('#btn-install').addEventListener('click', async () => {
     if (!installEvent) return;
