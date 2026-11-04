@@ -10,7 +10,7 @@ vor, aber woanders, **Grau** = kommt nicht vor.
 
 ## Spielarten
 
-- **Fränggisch:** jeden Tag ein fränkisches Mundartwort mit 5 Buchstaben aus über 450 Wörtern,
+- **Fränggisch:** jeden Tag ein fränkisches Mundartwort mit 5 Buchstaben aus über 550 Wörtern,
   z. B. KÄRWA, GLUMP oder MÄDLA. Ab dem dritten Versuch gibt es auf Wunsch einen Tipp, nach dem Spiel die Bedeutung.
 - **Hochdeutsch:** jeden Tag ein Wort mit 5 Buchstaben, ausgewählt aus über 1.500 Wörtern.
 - **Eigenes Rätsel:** ein Wort mit 3–10 Buchstaben ausdenken, die Zahl der Versuche (3–9) wählen
@@ -142,14 +142,15 @@ Die Liste besteht aus zwei Blöcken:
 1. **24 Wörter** (Block ab 1.1.2026), für dieses Projekt zusammengestellt. Wörter, Schreibweise
    und Erklärungen sind eigene Arbeit; die meisten davon sind auch im WBF als Mundartbeleg
    nachgewiesen.
-2. **434 Wörter** (Block ab 5.11.2026) aus dem **Fränkischen Wörterbuch (WBF)**, bezogen über
+2. **554 Wörter** (Block ab 5.11.2026) aus dem **Fränkischen Wörterbuch (WBF)**, bezogen über
    [Bayerns Dialekte Online (BDO)](https://bdo.badw.de/),
    © Bayerische Akademie der Wissenschaften (BAdW) und Friedrich-Alexander-Universität
    Erlangen-Nürnberg, Lizenz
    **[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.de)**.
    Übernommen wurden die Mundart-Belegformen und die zugehörigen Bedeutungen.
    Bearbeitung: nur Belegformen mit genau 5 Buchstaben, die an mindestens 3 Orten belegt sind,
-   dazu 45 von Hand ausgewählte alltagsnahe Wörter mit 2 Belegorten;
+   dazu 165 von Hand ausgewählte alltagsnahe Wörter mit 2 Belegorten (keine Fachbegriffe aus
+   Landwirtschaft, Handwerk oder Wagenbau);
    je Wort und Bedeutung die verbreitetste Schreibweise; ohne Wörter, die auch Standarddeutsch
    sind, ohne gebeugte Verbformen, Namen, derbe oder abwertende Wörter und alemannisch bzw.
    schwäbisch wirkende Formen auf -LI; Fragezeichen in
