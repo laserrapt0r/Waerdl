@@ -753,6 +753,15 @@ function initInstall() {
   }
 }
 
+// ---------- Speicher dauerhaft machen ----------
+// Bittet den Browser, Statistik und Spielstände nicht bei Speichermangel zu löschen.
+// Chrome gewährt das bei installierten Apps meist still, Safari ab Version 17.
+async function requestPersistentStorage() {
+  try {
+    if (navigator.storage?.persist && !(await navigator.storage.persisted())) await navigator.storage.persist();
+  } catch { /* nicht unterstützt – egal */ }
+}
+
 // ---------- Start ----------
 function init() {
   buildKeyboard();
@@ -760,6 +769,7 @@ function init() {
   initCreate();
   initInstall();
   initNotify();
+  requestPersistentStorage();
 
   document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => {
     const mode = t.dataset.mode;

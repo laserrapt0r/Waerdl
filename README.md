@@ -28,7 +28,9 @@ Erlaubt sind nur die Buchstaben A–Z, Ä, Ö, Ü und ß.
 - **Teilen:** Ergebnis als Kästchen-Raster oder eigenes Rätsel über das Teilen-Menü des Geräts
   verschicken, sonst wird es in die Zwischenablage kopiert.
 - **Statistik:** gespielte Runden, Gewinnquote, Serien und Verteilung der Versuche, getrennt für
-  Fränggisch und Hochdeutsch.
+  Fränggisch und Hochdeutsch. Sie wird nur auf dem jeweiligen Gerät gespeichert und bleibt bei
+  Updates erhalten. Verloren geht sie, wenn man die App löscht oder die Browserdaten der Seite
+  löscht. Auf dem iPhone haben Safari und die App auf dem Home-Bildschirm getrennte Speicher.
 - **Erinnerung an das neue Wort des Tages:** Beim ersten Start fragt Wärdl, ob es Bescheid geben
   soll. Ändern lässt sich das jederzeit unter ⚙ Einstellungen.
 
