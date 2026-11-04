@@ -103,8 +103,8 @@ function setupGame() {
   } else if (mode === 'hochdeutsch') {
     game = { mode, day, answer: hochdeutschForDay(day), tries: 6, storageKey: `waerdl:hochdeutsch:${day}` };
   } else {
-    const [answer, meaning] = frankenForDay(day);
-    game = { mode, day, answer, meaning, tries: 6, storageKey: `waerdl:franken:${day}` };
+    const [answer, meaning, fromWbf] = frankenForDay(day);
+    game = { mode, day, answer, meaning, wbf: !!fromWbf, tries: 6, storageKey: `waerdl:franken:${day}` };
   }
 
   const saved = store.get(game.storageKey, null);
@@ -370,6 +370,15 @@ function openResult() {
     for (const c of lettersOf(game.answer)) word.append(h('span', 'tile correct', c));
     body.append(word);
     if (game.meaning) body.append(h('p', 'meaning', game.meaning));
+    if (game.wbf) {
+      const src = h('p', 'small source');
+      const a = h('a', null, 'Fränkisches Wörterbuch (WBF)');
+      a.href = 'https://bdo.badw.de/';
+      a.target = '_blank';
+      a.rel = 'noopener';
+      src.append('Quelle: ', a, ', BAdW, CC BY 4.0');
+      body.append(src);
+    }
   } else {
     body.append(h('h2', null, 'Statistik'));
   }

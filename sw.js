@@ -1,6 +1,6 @@
 // Service Worker: macht Wärdl offline-fähig und installierbar.
 // Bei jeder Änderung an den Dateien VERSION erhöhen, damit Clients neu laden.
-const VERSION = 'v5';
+const VERSION = 'v6';
 const CACHE = `waerdl-${VERSION}`;
 const ASSETS = [
   './',

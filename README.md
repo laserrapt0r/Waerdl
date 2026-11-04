@@ -10,8 +10,8 @@ vor, aber woanders, **Grau** = kommt nicht vor.
 
 ## Spielarten
 
-- **Fränggisch:** jeden Tag ein fränkisches Mundartwort mit 5 Buchstaben, z. B. KÄRWA, GLUMP oder
-  MÄDLA. Ab dem dritten Versuch gibt es auf Wunsch einen Tipp, nach dem Spiel die Bedeutung.
+- **Fränggisch:** jeden Tag ein fränkisches Mundartwort mit 5 Buchstaben aus über 400 Wörtern,
+  z. B. KÄRWA, GLUMP oder MÄDLA. Ab dem dritten Versuch gibt es auf Wunsch einen Tipp, nach dem Spiel die Bedeutung.
 - **Hochdeutsch:** jeden Tag ein Wort mit 5 Buchstaben, ausgewählt aus über 1.500 Wörtern.
 - **Eigenes Rätsel:** ein Wort mit 3–10 Buchstaben ausdenken, die Zahl der Versuche (3–9) wählen
   und den Link verschicken. Das Wort steht verschlüsselt im Link, und der Link bleibt kurz, z. B.
@@ -137,16 +137,25 @@ Rechtschreibung; ohne sehr seltene Wörter.
 
 ### Fränkische Wortliste (`js/words.js`)
 
-Die Wörter sind allgemein gebräuchlicher fränkischer Mundart-Wortschatz. Sie wurden für dieses
-Projekt ohne Übernahme aus einem Wörterbuch oder einer Datenbank zusammengestellt. Auswahl,
-Schreibweise und Erklärungen sind eigene Arbeit des Projekts. Fränkisch wird regional
-unterschiedlich gesprochen und geschrieben; Hinweise auf andere Schreibweisen oder Bedeutungen
-sind willkommen.
+Die Liste besteht aus zwei Blöcken:
 
-Zum Nachschlagen fränkischer Wörter eignet sich das
-[Fränkische Wörterbuch (WBF)](https://wbf.badw.de/) der Bayerischen Akademie der Wissenschaften
-und der Friedrich-Alexander-Universität Erlangen-Nürnberg. Daten daraus sind in Wärdl nicht
-enthalten.
+1. **24 Wörter** (Block ab 1.1.2026), für dieses Projekt zusammengestellt. Wörter, Schreibweise
+   und Erklärungen sind eigene Arbeit; die meisten davon sind auch im WBF als Mundartbeleg
+   nachgewiesen.
+2. **397 Wörter** (Block ab 5.11.2026) aus dem **Fränkischen Wörterbuch (WBF)**, bezogen über
+   [Bayerns Dialekte Online (BDO)](https://bdo.badw.de/),
+   © Bayerische Akademie der Wissenschaften (BAdW) und Friedrich-Alexander-Universität
+   Erlangen-Nürnberg, Lizenz
+   **[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.de)**.
+   Übernommen wurden die Mundart-Belegformen und die zugehörigen Bedeutungen.
+   Bearbeitung: nur Belegformen mit genau 5 Buchstaben, die an mindestens 3 Orten belegt sind;
+   je Wort und Bedeutung die verbreitetste Schreibweise; ohne Wörter, die auch Standarddeutsch
+   sind, ohne gebeugte Verbformen, Namen und derbe oder abwertende Wörter; Fragezeichen in
+   Bedeutungen entfernt, Bedeutungen sonst unverändert. Im Spiel wird bei diesen Wörtern die
+   Quelle unter der Bedeutung angezeigt.
+
+Fränkisch wird regional unterschiedlich gesprochen und geschrieben; Hinweise auf andere
+Schreibweisen oder Bedeutungen sind willkommen.
 
 ### Übrige Inhalte
 

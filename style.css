@@ -331,3 +331,5 @@ input:focus, select:focus { outline: none; border-color: var(--correct); }
 .switch-row input:disabled { opacity: .45; cursor: not-allowed; }
 
 .dlg a { color: var(--correct); }
+
+.source { text-align: center; margin: 0 0 4px; }
