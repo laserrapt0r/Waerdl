@@ -1,6 +1,6 @@
 // Service Worker: macht Wärdl offline-fähig und installierbar.
 // Bei jeder Änderung an den Dateien VERSION erhöhen, damit Clients neu laden.
-const VERSION = 'v10';
+const VERSION = 'v11';
 const CACHE = `waerdl-${VERSION}`;
 const ASSETS = [
   './',
@@ -20,7 +20,11 @@ const ASSETS = [
 const META_CACHE = 'waerdl-meta';
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // cache: 'reload' umgeht den HTTP-Cache des Browsers (GitHub erlaubt 10 Minuten), damit
+  // nach einem Update garantiert die neuen Dateien gespeichert werden.
+  e.waitUntil(caches.open(CACHE)
+    .then((c) => c.addAll(ASSETS.map((url) => new Request(url, { cache: 'reload' }))))
+    .then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (e) => {

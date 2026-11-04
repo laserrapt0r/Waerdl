@@ -736,7 +736,20 @@ function initInstall() {
     $('#btn-install').hidden = true;
   });
   if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    // War schon ein Service Worker aktiv, bedeutet ein Wechsel: neue Version installiert.
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (hadController) $('#update-banner').hidden = false;
+    });
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      // Beim Start aktiv nach einer neuen Version fragen (Browser tun das sonst nur verzögert).
+      if (hadController) reg.update().catch(() => {});
+      // Installierte Apps laufen oft tagelang – auch beim Zurückholen nach Updates suchen.
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+    }).catch(() => {});
+    $('#update-reload').addEventListener('click', () => location.reload());
   }
 }
 

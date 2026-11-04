@@ -61,8 +61,20 @@ Teilen nicht.)
 Die Seite wird über GitHub Pages direkt aus dem Zweig `main` (Hauptverzeichnis) ausgeliefert.
 Alle Pfade sind relativ, Wärdl funktioniert also auch in jedem Unterverzeichnis.
 
-**Wichtig nach Änderungen:** In `sw.js` die Versionsnummer `VERSION` erhöhen (z. B. `v5` → `v6`),
-damit installierte Apps die neuen Dateien laden.
+### Updates veröffentlichen
+
+1. Dateien ändern.
+2. In `sw.js` die Versionsnummer `VERSION` erhöhen (z. B. `v11` → `v12`). **Ohne diesen Schritt
+   bekommen installierte Apps die Änderung nicht zuverlässig.**
+3. Änderungen auf GitHub hochladen – GitHub Pages veröffentlicht sie nach etwa einer Minute.
+
+Was dann bei den Spielerinnen und Spielern passiert: Beim nächsten Öffnen (oder wenn die App aus
+dem Hintergrund geholt wird) lädt Wärdl die neue Version im Hintergrund herunter und zeigt unten
+den Hinweis **„Neue Version von Wärdl ist da – Neu laden“**. Ein Tipp darauf genügt; der Spielstand
+bleibt erhalten. Wer den Hinweis ignoriert, bekommt die neue Version beim nächsten Start.
+
+Wer es sofort braucht, kann die App auch ganz schließen und neu öffnen bzw. im Browser die Seite
+neu laden.
 
 ### Dateien
 
