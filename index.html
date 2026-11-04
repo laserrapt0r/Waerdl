@@ -127,6 +127,36 @@
       <input type="checkbox" id="set-notify" role="switch">
     </label>
     <p class="small" id="notify-status"></p>
+
+    <h3>Statistik sichern</h3>
+    <p class="small">Damit nimmst du Statistik und das heutige Spiel auf ein anderes Gerät mit oder holst sie nach
+      dem Neuinstallieren zurück. Schick dir den Link z. B. per Mail oder Messenger und öffne ihn auf dem Zielgerät.</p>
+    <button class="btn" id="backup-create" type="button">💾 Sicherung erstellen</button>
+    <div id="backup-result" hidden>
+      <label for="backup-link">Dein Sicherungslink</label>
+      <input id="backup-link" type="text" readonly>
+      <div class="btn-row">
+        <button class="btn primary" id="backup-share" type="button">Teilen</button>
+        <button class="btn" id="backup-copy" type="button">Kopieren</button>
+      </div>
+    </div>
+    <details class="backup-import">
+      <summary>Sicherung einlesen</summary>
+      <label for="backup-input">Link oder Code einfügen</label>
+      <input id="backup-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button class="btn" id="backup-load" type="button">Einlesen</button>
+    </details>
+  </dialog>
+
+  <!-- Sicherung wiederherstellen (Rückfrage) -->
+  <dialog id="dlg-restore" class="dlg">
+    <h2>Sicherung einlesen?</h2>
+    <div id="restore-summary"></div>
+    <p class="small">Die Statistik auf diesem Gerät wird durch die Sicherung ersetzt.</p>
+    <div class="btn-row">
+      <button class="btn primary" id="restore-yes" type="button">Einlesen</button>
+      <button class="btn" id="restore-no" type="button">Abbrechen</button>
+    </div>
   </dialog>
 
   <!-- Eigenes Rätsel -->

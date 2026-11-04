@@ -31,6 +31,11 @@ Erlaubt sind nur die Buchstaben A–Z, Ä, Ö, Ü und ß.
   Fränggisch und Hochdeutsch. Sie wird nur auf dem jeweiligen Gerät gespeichert und bleibt bei
   Updates erhalten. Verloren geht sie, wenn man die App löscht oder die Browserdaten der Seite
   löscht. Auf dem iPhone haben Safari und die App auf dem Home-Bildschirm getrennte Speicher.
+- **Sicherung:** Unter ⚙ Einstellungen → „Sicherung erstellen“ entsteht ein Link mit Statistik und
+  dem heutigen Spiel. Den Link schickt man sich selbst (Mail, Messenger, Notiz) und öffnet ihn auf
+  dem neuen Gerät oder nach dem Neuinstallieren; nach einer Rückfrage werden die Daten übernommen.
+  Alternativ lässt sich der Link unter „Sicherung einlesen“ einfügen. Die Daten stehen nur im Link
+  selbst und werden an keinen Server geschickt.
 - **Erinnerung an das neue Wort des Tages:** Beim ersten Start fragt Wärdl, ob es Bescheid geben
   soll. Ändern lässt sich das jederzeit unter ⚙ Einstellungen.
 

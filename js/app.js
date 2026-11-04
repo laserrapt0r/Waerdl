@@ -93,7 +93,8 @@ const isOver = () => isWon() || guesses.length >= game.tries;
 const isWon = () => guesses.includes(game.answer);
 
 function setupGame() {
-  const code = decodeURIComponent(location.hash.slice(1));
+  const rawHash = decodeURIComponent(location.hash.slice(1));
+  const code = rawHash.startsWith(BACKUP_PREFIX) ? '' : rawHash; // Sicherungslinks behandelt initBackup
   const custom = code ? decodePuzzle(code) : null;
   if (code && !custom) toast('Der Link ist ungültig – hier ist das Wort des Tages.', 2600);
 
@@ -753,6 +754,162 @@ function initInstall() {
   }
 }
 
+
+// ---------- Sicherung der Statistik ----------
+// Format: Link …/#sicherung=<Code>. Code = 'z' + base64url(deflate(JSON)) bzw. 'j' + base64url(JSON),
+// falls der Browser keine Kompression kann. Enthalten: Statistik beider Modi + heutiges Spiel.
+const BACKUP_PREFIX = 'sicherung=';
+const DAILY_MODES = ['franken', 'hochdeutsch'];
+
+const b64url = {
+  enc(bytes) {
+    let bin = '';
+    for (const b of bytes) bin += String.fromCharCode(b);
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  },
+  dec(str) {
+    const bin = atob(str.replace(/-/g, '+').replace(/_/g, '/'));
+    return Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  },
+};
+
+async function pipeBytes(bytes, stream) {
+  const out = new Blob([bytes]).stream().pipeThrough(stream);
+  return new Uint8Array(await new Response(out).arrayBuffer());
+}
+
+async function buildBackupCode() {
+  const day = todayNumber();
+  const data = { v: 1, day, s: {}, g: {} };
+  for (const m of DAILY_MODES) {
+    data.s[m] = loadStats(m);
+    const g = store.get(`waerdl:${m}:${day}`, null);
+    if (g?.guesses?.length) data.g[m] = { guesses: g.guesses, hint: !!g.hint };
+  }
+  const json = new TextEncoder().encode(JSON.stringify(data));
+  if (typeof CompressionStream === 'function') {
+    try { return 'z' + b64url.enc(await pipeBytes(json, new CompressionStream('deflate-raw'))); } catch { /* weiter ohne */ }
+  }
+  return 'j' + b64url.enc(json);
+}
+
+const intOr = (x, d = 0) => (Number.isInteger(x) && x >= 0 && x < 1e6 ? x : d);
+const dayOr = (x) => (Number.isInteger(x) && x >= 0 && x < 1e5 ? x : null);
+
+/** Liest einen Code ein und prüft jeden Wert. Liefert bereinigte Daten oder null. */
+async function parseBackupCode(input) {
+  try {
+    let code = String(input).trim();
+    const i = code.indexOf(BACKUP_PREFIX);
+    if (i >= 0) code = code.slice(i + BACKUP_PREFIX.length);
+    code = decodeURIComponent(code).replace(/\s+/g, '');
+    let bytes = b64url.dec(code.slice(1));
+    if (code[0] === 'z') bytes = await pipeBytes(bytes, new DecompressionStream('deflate-raw'));
+    else if (code[0] !== 'j') return null;
+    const d = JSON.parse(new TextDecoder().decode(bytes));
+    if (d?.v !== 1 || typeof d.s !== 'object') return null;
+    const clean = { day: dayOr(d.day), s: {}, g: {} };
+    for (const m of DAILY_MODES) {
+      const st = d.s[m] || {};
+      const dist = {};
+      for (const [k, v] of Object.entries(st.dist || {})) if (/^[1-9]$/.test(k)) dist[k] = intOr(v);
+      const played = intOr(st.played);
+      clean.s[m] = {
+        played, wins: Math.min(intOr(st.wins), played), streak: intOr(st.streak), maxStreak: intOr(st.maxStreak),
+        dist, lastPlayed: dayOr(st.lastPlayed), lastWin: dayOr(st.lastWin),
+      };
+      const g = d.g?.[m];
+      if (g && Array.isArray(g.guesses)) {
+        const guesses = g.guesses.filter((w) => typeof w === 'string' && isValidWord(w) && [...w].length === 5).slice(0, 6);
+        if (guesses.length) clean.g[m] = { guesses, hint: !!g.hint };
+      }
+    }
+    return clean;
+  } catch {
+    return null;
+  }
+}
+
+let pendingRestore = null;
+
+function showRestoreDialog(data) {
+  pendingRestore = data;
+  const box = $('#restore-summary');
+  box.innerHTML = '';
+  const t = document.createElement('table');
+  t.className = 'restore-table';
+  const row = (cells, tag = 'td') => {
+    const tr = document.createElement('tr');
+    cells.forEach((c) => { const el = document.createElement(tag); el.textContent = c; tr.append(el); });
+    t.append(tr);
+  };
+  row(['', 'Gespielt', 'Gewonnen', 'Beste Serie'], 'th');
+  const label = { franken: 'Fränggisch', hochdeutsch: 'Hochdeutsch' };
+  for (const m of DAILY_MODES) {
+    const now = loadStats(m);
+    const b = data.s[m];
+    row([`${label[m]} – Sicherung`, b.played, b.wins, b.maxStreak]);
+    row([`${label[m]} – dieses Gerät`, now.played, now.wins, now.maxStreak]);
+  }
+  box.append(t);
+  openDialog('#dlg-restore');
+}
+
+function applyRestore(data) {
+  for (const m of DAILY_MODES) store.set(`waerdl:stats:${m}`, data.s[m]);
+  // Das heutige Spiel nur übernehmen, wenn es vom selben Tag ist und hier nicht schon weiter gespielt wurde.
+  if (data.day === todayNumber()) {
+    for (const [m, g] of Object.entries(data.g)) {
+      const key = `waerdl:${m}:${data.day}`;
+      const here = store.get(key, null);
+      if (!here?.guesses || here.guesses.length < g.guesses.length) store.set(key, g);
+    }
+  }
+}
+
+function initBackup() {
+  $('#backup-create').addEventListener('click', async () => {
+    const code = await buildBackupCode();
+    $('#backup-link').value = `${baseUrl()}#${BACKUP_PREFIX}${code}`;
+    $('#backup-result').hidden = false;
+    $('#backup-share').textContent = canNativeShare() ? 'Teilen' : 'Kopieren';
+    $('#backup-copy').hidden = !canNativeShare();
+  });
+  $('#backup-share').addEventListener('click', () => {
+    const link = $('#backup-link').value;
+    if (canNativeShare()) shareText(`Meine Wärdl-Sicherung (Statistik):\n${link}`, 'Wärdl-Sicherung');
+    else copyText(link);
+  });
+  $('#backup-copy').addEventListener('click', () => copyText($('#backup-link').value));
+  $('#backup-link').addEventListener('focus', (e) => e.target.select());
+  $('#backup-load').addEventListener('click', async () => {
+    const data = await parseBackupCode($('#backup-input').value);
+    if (!data) { toast('Diese Sicherung ist ungültig oder unvollständig.', 2600); return; }
+    showRestoreDialog(data);
+  });
+  $('#restore-yes').addEventListener('click', () => {
+    if (pendingRestore) applyRestore(pendingRestore);
+    pendingRestore = null;
+    $('#dlg-restore').close();
+    toast('✅ Sicherung eingelesen', 2200);
+    setupGame();
+  });
+  $('#restore-no').addEventListener('click', () => { pendingRestore = null; $('#dlg-restore').close(); });
+
+  // Sicherungslink geöffnet? (Erstprüfung am Ende von init, nach den Startdialogen)
+  addEventListener('hashchange', checkBackupHash);
+}
+
+async function checkBackupHash() {
+  const raw = decodeURIComponent(location.hash.slice(1));
+  if (!raw.startsWith(BACKUP_PREFIX)) return;
+  history.replaceState(null, '', location.pathname + location.search); // Link nicht im Verlauf stehen lassen
+  const data = await parseBackupCode(raw);
+  if (!data) { toast('Diese Sicherung ist ungültig oder unvollständig.', 2600); return; }
+  askPending = false; // keine Benachrichtigungsfrage dazwischen
+  showRestoreDialog(data);
+}
+
 // ---------- Speicher dauerhaft machen ----------
 // Bittet den Browser, Statistik und Spielstände nicht bei Speichermangel zu löschen.
 // Chrome gewährt das bei installierten Apps meist still, Safari ab Version 17.
@@ -769,6 +926,7 @@ function init() {
   initCreate();
   initInstall();
   initNotify();
+  initBackup();
   requestPersistentStorage();
 
   document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => {
@@ -804,6 +962,7 @@ function init() {
     store.set('waerdl:seenHelp', true);
     if (!isOver()) openDialog('#dlg-help');
   }
+  setTimeout(checkBackupHash, 700); // nach Ergebnis-/Anleitungsfenster, damit die Rückfrage oben liegt
   setTimeout(maybeAskNotify, 900); // wartet, bis andere Dialoge geschlossen sind
 }
 

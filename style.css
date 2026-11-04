@@ -371,3 +371,10 @@ input:focus, select:focus { outline: none; border-color: var(--correct); }
   font-weight: 600;
 }
 .update-banner .btn { width: auto; margin: 0; padding: 9px 14px; white-space: nowrap; }
+
+.backup-import { margin-top: 14px; }
+.backup-import summary { cursor: pointer; font-weight: 700; color: var(--correct); padding: 6px 0; }
+#backup-link, #backup-input { font-size: 15px; }
+.restore-table { width: 100%; border-collapse: collapse; margin: 6px 0 4px; font-size: 15px; }
+.restore-table th, .restore-table td { padding: 5px 4px; text-align: left; border-bottom: 1px solid var(--border); }
+.restore-table td:not(:first-child), .restore-table th:not(:first-child) { text-align: right; }
