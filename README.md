@@ -135,7 +135,20 @@ Bearbeitung: nur Wörter mit genau 5 Buchstaben; nur Substantive, Verben, Adjekt
 ohne Namen, Abkürzungen, gebeugte Formen sowie veraltete oder abwertende Wörter; nur neue
 Rechtschreibung; ohne sehr seltene Wörter.
 
+### Fränkische Wortliste (`js/words.js`)
+
+Die Wörter sind allgemein gebräuchlicher fränkischer Mundart-Wortschatz. Sie wurden für dieses
+Projekt ohne Übernahme aus einem Wörterbuch oder einer Datenbank zusammengestellt. Auswahl,
+Schreibweise und Erklärungen sind eigene Arbeit des Projekts. Fränkisch wird regional
+unterschiedlich gesprochen und geschrieben; Hinweise auf andere Schreibweisen oder Bedeutungen
+sind willkommen.
+
+Zum Nachschlagen fränkischer Wörter eignet sich das
+[Fränkische Wörterbuch (WBF)](https://wbf.badw.de/) der Bayerischen Akademie der Wissenschaften
+und der Friedrich-Alexander-Universität Erlangen-Nürnberg. Daten daraus sind in Wärdl nicht
+enthalten.
+
 ### Übrige Inhalte
 
-Programmcode, Gestaltung, Icons und die fränkische Wortliste samt Erklärungen sind eigene Werke
-dieses Projekts. Es werden keine fremden Bibliotheken, Schriftarten oder Bilder eingebunden.
+Programmcode, Gestaltung und Icons sind eigene Arbeit dieses Projekts. Es werden keine fremden
+Bibliotheken, Schriftarten oder Bilder eingebunden.
