@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+  <title>Wärdl</title>
+  <meta name="description" content="Wärdl – das Worträtsel mit fränkischem Wort des Tages. Eigene Rätsel erstellen und als Link teilen.">
+  <meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121521" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Wärdl">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta property="og:title" content="Wärdl">
+  <meta property="og:description" content="Errätst du das Wort? Fränkisches Wort des Tages und eigene Rätsel zum Teilen.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="modulepreload" href="js/code.js">
+  <link rel="modulepreload" href="js/schedule.js">
+  <link rel="modulepreload" href="js/words.js">
+  <link rel="modulepreload" href="js/words-de.js">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="icon-btn" id="btn-help" aria-label="Spielanleitung" title="Spielanleitung">?</button>
+        <button class="icon-btn" id="btn-settings" aria-label="Einstellungen" title="Einstellungen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M5.5 18.5l1.8-1.8M16.7 7.3l1.8-1.8"/></svg>
+        </button>
+      </div>
+      <h1 class="logo">W<span>ä</span>rdl</h1>
+      <div class="topbar-right">
+        <button class="icon-btn" id="btn-stats" aria-label="Statistik" title="Statistik">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6" /></svg>
+        </button>
+        <button class="icon-btn" id="btn-create" aria-label="Eigenes Rätsel erstellen" title="Eigenes Rätsel erstellen">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        </button>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="Spielmodus">
+      <button role="tab" class="tab" data-mode="franken">Fränggisch</button>
+      <button role="tab" class="tab" data-mode="hochdeutsch">Hochdeutsch</button>
+      <button role="tab" class="tab" data-mode="custom" hidden>Eigenes</button>
+    </nav>
+
+    <div class="infoline">
+      <span id="info-text"></span>
+      <button class="hint-btn" id="btn-hint" hidden>💡 Tipp</button>
+    </div>
+
+    <main id="board-wrap">
+      <div id="board" role="grid" aria-label="Spielfeld"></div>
+    </main>
+
+    <div id="keyboard" aria-label="Tastatur"></div>
+  </div>
+
+  <div id="toasts" aria-live="polite"></div>
+
+  <!-- Spielanleitung -->
+  <dialog id="dlg-help" class="dlg">
+    <button class="dlg-close" aria-label="Schließen">×</button>
+    <h2>So geht's</h2>
+    <p>Errate das gesuchte Wort. Jeder Versuch muss so viele Buchstaben haben wie das Wort.
+       Nach jedem Versuch zeigen die Farben, wie nah du dran bist:</p>
+    <div class="example">
+      <div class="mini-row"><span class="tile mini correct">K</span><span class="tile mini">Ä</span><span class="tile mini">R</span><span class="tile mini">W</span><span class="tile mini">A</span></div>
+      <p><b class="c-correct">Blau</b>: Buchstabe steht an der richtigen Stelle.</p>
+      <div class="mini-row"><span class="tile mini">S</span><span class="tile mini">P</span><span class="tile mini present">E</span><span class="tile mini">Z</span><span class="tile mini">L</span></div>
+      <p><b class="c-present">Orange</b>: Buchstabe kommt vor, aber an anderer Stelle.</p>
+      <div class="mini-row"><span class="tile mini">G</span><span class="tile mini">L</span><span class="tile mini absent">U</span><span class="tile mini">M</span><span class="tile mini">P</span></div>
+      <p><b>Grau</b>: Buchstabe kommt nicht vor.</p>
+    </div>
+    <h3>Modi</h3>
+    <ul>
+      <li><b>Fränggisch</b>: jeden Tag ein fränkisches Mundartwort mit fünf Buchstaben. Ab dem dritten Versuch gibt es einen Tipp.</li>
+      <li><b>Hochdeutsch</b>: jeden Tag ein neues Wort mit fünf Buchstaben (über 1.500 Wörter).</li>
+      <li><b>Eigenes Rätsel</b>: über <b>＋</b> ein Wort ausdenken und den Link verschicken.</li>
+    </ul>
+    <p class="small">Erlaubt sind A–Z, Ä, Ö, Ü und ß. Fränkisch schreibt jedes Dorf ein bisschen anders. Wir nehmen eine verbreitete Schreibweise.</p>
+    <p class="small">Hochdeutsche Wortliste: abgeleitet aus <a href="https://de.wiktionary.org/" target="_blank" rel="noopener">Wiktionary</a>
+      und der <a href="https://www.dwds.de/lemma/list" target="_blank" rel="noopener">DWDS-Lemmaliste</a>,
+      Lizenz <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.de" target="_blank" rel="noopener">CC BY-SA 4.0</a>.</p>
+    <div id="install-hint" class="small"></div>
+    <button class="btn primary" id="btn-install" hidden>📲 App installieren</button>
+  </dialog>
+
+  <!-- Ergebnis / Statistik -->
+  <dialog id="dlg-result" class="dlg">
+    <button class="dlg-close" aria-label="Schließen">×</button>
+    <div id="result-body"></div>
+  </dialog>
+
+  <!-- Frage nach Benachrichtigungen (einmalig) -->
+  <dialog id="dlg-notify" class="dlg">
+    <h2>🔔 Erinnerung gefällig?</h2>
+    <p>Soll Wärdl dir Bescheid geben, wenn es ein neues Wort des Tages gibt?</p>
+    <p class="small">Du bekommst höchstens eine Nachricht pro Tag und nur, wenn du an dem Tag noch nicht reingeschaut hast.
+      Du kannst das jederzeit in den Einstellungen (⚙) ändern.</p>
+    <div class="btn-row">
+      <button class="btn primary" id="notify-yes">Ja, gerne</button>
+      <button class="btn" id="notify-no">Nein, danke</button>
+    </div>
+  </dialog>
+
+  <!-- Einstellungen -->
+  <dialog id="dlg-settings" class="dlg">
+    <button class="dlg-close" aria-label="Schließen">×</button>
+    <h2>Einstellungen</h2>
+    <label class="switch-row" for="set-notify">
+      <span>Benachrichtigung bei neuem Wort des Tages</span>
+      <input type="checkbox" id="set-notify" role="switch">
+    </label>
+    <p class="small" id="notify-status"></p>
+  </dialog>
+
+  <!-- Eigenes Rätsel -->
+  <dialog id="dlg-create" class="dlg">
+    <button class="dlg-close" aria-label="Schließen">×</button>
+    <h2>Eigenes Rätsel</h2>
+    <p>Denk dir ein Wort aus (3–10 Buchstaben) und schick den Link an Freunde. Im Link ist das Wort verschlüsselt.</p>
+    <form id="create-form" autocomplete="off">
+      <label for="create-word">Wort</label>
+      <input id="create-word" type="text" inputmode="text" autocapitalize="characters" autocomplete="off"
+             autocorrect="off" spellcheck="false" maxlength="14" placeholder="z. B. SCHÄUFERLA">
+      <div class="field-hint" id="create-hint">&nbsp;</div>
+      <label for="create-tries">Versuche</label>
+      <select id="create-tries"></select>
+      <button class="btn primary" type="submit">Link erstellen</button>
+    </form>
+    <div id="create-result" hidden>
+      <label for="create-link">Dein Link</label>
+      <input id="create-link" type="text" readonly>
+      <div class="btn-row">
+        <button class="btn primary" id="create-share">Teilen</button>
+        <button class="btn" id="create-copy">Kopieren</button>
+      </div>
+    </div>
+  </dialog>
+</body>
+</html>
