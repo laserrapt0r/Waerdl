@@ -13,6 +13,10 @@ vor, aber woanders, **Grau** = kommt nicht vor.
 - **Fränggisch:** jeden Tag ein fränkisches Mundartwort mit 5 Buchstaben aus über 550 Wörtern,
   z. B. KÄRWA, GLUMP oder MÄDLA. Nach dem Spiel steht die Bedeutung im Ergebnis.
 - **Hochdeutsch:** jeden Tag ein Wort mit 5 Buchstaben, ausgewählt aus über 1.500 Wörtern.
+- **🎲 Zufallswort:** beliebig viele Runden mit einem zufälligen Wort aus der gerade gewählten Liste
+  (Fränggisch oder Hochdeutsch). Das heutige Wort des Tages und die zuletzt gespielten Zufallswörter
+  werden ausgelassen. Zufallsrunden zählen nicht zur Statistik; das Ergebnis lässt sich als Link
+  teilen, damit andere dasselbe Wort raten.
 - **Eigenes Rätsel:** ein Wort mit 3–10 Buchstaben ausdenken, die Zahl der Versuche (3–9) wählen
   und den Link verschicken. Das Wort steht verschlüsselt im Link, und der Link bleibt kurz, z. B.
   `https://laserrapt0r.github.io/Waerdl/#84QjHx3`.

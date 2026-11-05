@@ -377,3 +377,9 @@ input:focus, select:focus { outline: none; border-color: var(--correct); }
 /* Schreibmarke in der aktuellen Zeile: Feld antippen, um dort einzutragen */
 .row.editable .tile { cursor: pointer; }
 .tile.cursor { background: var(--highlight); }
+
+.icon-btn svg.dice circle { fill: currentColor; stroke: none; }
+@media (max-width: 380px) {
+  .topbar { padding: 0 6px; }
+  .icon-btn { width: 37px; }
+}

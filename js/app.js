@@ -1,7 +1,7 @@
 import { ALPHABET, MIN_TRIES, MAX_TRIES, cleanWord, decodePuzzle, encodePuzzle, isValidWord } from './code.js';
 import { FRANKEN, FRANKEN_SPERRE } from './words.js';
 import { HOCHDEUTSCH, HOCHDEUTSCH_SPERRE } from './words-de.js';
-import { createSchedule, dayFromDate } from './schedule.js';
+import { createSchedule, dayFromDate, dayFromIso } from './schedule.js';
 
 const $ = (sel) => document.querySelector(sel);
 // Tastatur auf einem Raster von 12 Einheiten: ⌫ rechts in der Mitte, OK breit rechts unten.
@@ -81,7 +81,7 @@ async function shareText(text, title = 'Wärdl') {
 const canNativeShare = () => typeof navigator.share === 'function';
 
 // ---------- Spielzustand ----------
-let game = null;      // { mode, day, answer, tries, meaning, code, storageKey }
+let game = null;      // { mode, source, day, answer, tries, meaning, wbf, code, storageKey }
 let guesses = [];     // bereits abgegebene Wörter
 let current = [];     // Buchstaben der aktuellen Zeile ('' = leeres Feld)
 let cursor = 0;       // Feld, in das der nächste Buchstabe kommt (= Länge: Zeile voll)
@@ -100,9 +100,13 @@ function setupGame() {
   const day = todayNumber();
   let mode = custom ? 'custom' : store.get('waerdl:mode', 'franken');
   if (mode === 'custom' && !custom) mode = 'franken';
+  const random = mode === 'zufall' ? loadRandom() : null;
+  if (mode === 'zufall' && !random) mode = 'franken';
 
   if (mode === 'custom') {
     game = { mode, day, answer: custom.word, tries: custom.tries, code, storageKey: `waerdl:c:${code}` };
+  } else if (mode === 'zufall') {
+    game = { mode, day, ...random, tries: 6, storageKey: RANDOM_KEY };
   } else if (mode === 'hochdeutsch') {
     game = { mode, day, answer: hochdeutschForDay(day), tries: 6, storageKey: `waerdl:hochdeutsch:${day}` };
   } else {
@@ -119,7 +123,7 @@ function setupGame() {
 
   document.querySelectorAll('.tab').forEach((t) => {
     t.setAttribute('aria-selected', String(t.dataset.mode === mode));
-    if (t.dataset.mode === 'custom') t.hidden = mode !== 'custom';
+    if (t.dataset.mode === 'custom' || t.dataset.mode === 'zufall') t.hidden = t.dataset.mode !== mode;
   });
   renderBoard();
   renderCurrent();
@@ -139,6 +143,7 @@ function updateInfo() {
     franken: `Fränkisches Wort des Tages #${game.day + 1} · ${len} Buchstaben`,
     hochdeutsch: `Wort des Tages #${game.day + 1} · ${len} Buchstaben`,
     custom: `Eigenes Rätsel · ${len} Buchstaben · ${game.tries} Versuche`,
+    zufall: `Zufallswort ${game.source === 'franken' ? 'Fränggisch' : 'Hochdeutsch'} · ${len} Buchstaben`,
   };
   $('#info-text').textContent = texts[game.mode];
 }
@@ -342,7 +347,7 @@ function submit() {
     renderCurrent(); // Schreibmarke in die nächste Zeile
     if (isWon()) {
       row.classList.add('win');
-      const list = game.mode === 'franken' ? PRAISE.franken : PRAISE.default;
+      const list = isFranken() ? PRAISE.franken : PRAISE.default;
       const idx = Math.round(((guesses.length - 1) / Math.max(game.tries - 1, 1)) * (list.length - 1));
       toast(list[idx], 2000);
       finish(true);
@@ -354,7 +359,7 @@ function submit() {
 }
 
 function finish(won) {
-  if (game.mode !== 'custom') {
+  if (isDaily()) {
     const st = loadStats(game.mode);
     if (st.lastPlayed !== game.day) {
       st.played++;
@@ -378,6 +383,67 @@ function loadStats(mode) {
   return { played: 0, wins: 0, streak: 0, maxStreak: 0, dist: {}, lastPlayed: null, lastWin: null, ...store.get(`waerdl:stats:${mode}`, {}) };
 }
 
+
+// ---------- Zufallswort ----------
+// Ein zufälliges Wort aus der Liste des gewählten Modus (Fränggisch/Hochdeutsch). Zählt nicht zur
+// Statistik. Ausgeschlossen: das heutige Wort des Tages und die zuletzt gespielten Zufallswörter.
+const RANDOM_KEY = 'waerdl:zufall';
+const RANDOM_RECENT_KEY = 'waerdl:zufall:zuletzt';
+const isDaily = () => game && (game.mode === 'franken' || game.mode === 'hochdeutsch');
+const isFranken = () => game && (game.mode === 'franken' || game.source === 'franken');
+
+/** Alle Wörter, die heute im Spiel sind (Blöcke mit Startdatum ≤ heute, ohne gesperrte). */
+function activeEntries(blocks, sperre, key) {
+  const today = todayNumber();
+  const seen = new Set();
+  const out = [];
+  for (const b of blocks) {
+    if (dayFromIso(b.ab) > today) continue;
+    for (const it of b.woerter) {
+      const w = key(it);
+      if (seen.has(w) || (sperre[w] && dayFromIso(sperre[w]) <= today)) continue;
+      seen.add(w);
+      out.push(it);
+    }
+  }
+  return out;
+}
+
+function randomPool(source) {
+  return source === 'franken'
+    ? activeEntries(FRANKEN, FRANKEN_SPERRE, (x) => x[0]).map(([w, m, wbf]) => ({ answer: w, meaning: m, wbf: !!wbf }))
+    : activeEntries(HOCHDEUTSCH, HOCHDEUTSCH_SPERRE, (x) => x).map((w) => ({ answer: w }));
+}
+
+/** Gespeichertes Zufallsspiel laden und prüfen; liefert {source, answer, meaning, wbf} oder null. */
+function loadRandom() {
+  const z = store.get(RANDOM_KEY, null);
+  if (!z || !['franken', 'hochdeutsch'].includes(z.source) || typeof z.answer !== 'string') return null;
+  const entry = randomPool(z.source).find((e) => e.answer === z.answer);
+  return entry ? { source: z.source, ...entry } : null;
+}
+
+function startRandom() {
+  const source = game?.mode === 'zufall' ? game.source : game?.mode === 'hochdeutsch' ? 'hochdeutsch' : 'franken';
+  const pool = randomPool(source);
+  const day = todayNumber();
+  const today = source === 'franken' ? frankenForDay(day)[0] : hochdeutschForDay(day);
+  const recent = store.get(RANDOM_RECENT_KEY, []);
+  const keep = Math.min(100, Math.floor(pool.length / 2)); // so viele zuletzt gespielte ausschließen
+  const blocked = new Set([today, ...recent.slice(-keep)]);
+  const choices = pool.filter((e) => !blocked.has(e.answer));
+  const list = choices.length ? choices : pool;
+  const r = new Uint32Array(1);
+  crypto.getRandomValues(r);
+  const pick = list[r[0] % list.length];
+  store.set(RANDOM_KEY, { source, answer: pick.answer, guesses: [] });
+  store.set(RANDOM_RECENT_KEY, [...recent, pick.answer].slice(-200));
+  store.set('waerdl:mode', 'zufall');
+  if (location.hash) history.pushState(null, '', location.pathname + location.search);
+  setupGame();
+  toast(`🎲 Zufallswort ${source === 'franken' ? 'Fränggisch' : 'Hochdeutsch'}`, 1600);
+}
+
 // ---------- Ergebnis & Statistik ----------
 function emojiGrid() {
   const map = { correct: '🟦', present: '🟧', absent: '⬛' };
@@ -390,8 +456,11 @@ function resultShareText() {
     franken: `Wärdl Fränggisch #${game.day + 1}`,
     hochdeutsch: `Wärdl #${game.day + 1}`,
     custom: 'Wärdl – eigenes Rätsel',
+    zufall: `Wärdl – Zufallswort ${game.source === 'franken' ? 'Fränggisch' : 'Hochdeutsch'}`,
   }[game.mode];
-  const url = game.mode === 'custom' ? `${baseUrl()}#${game.code}` : baseUrl();
+  // Beim Zufallswort wird ein Rätsel-Link geteilt, damit andere dasselbe Wort raten können.
+  const url = game.mode === 'custom' ? `${baseUrl()}#${game.code}`
+    : game.mode === 'zufall' ? `${baseUrl()}#${encodePuzzle(game.answer, game.tries)}` : baseUrl();
   return `${head}  ${score}/${game.tries}\n\n${emojiGrid()}\n\n${url}`;
 }
 
@@ -410,8 +479,8 @@ function openResult() {
 
   if (over) {
     body.append(h('h2', null, isWon()
-      ? (game.mode === 'franken' ? 'Gwunna! 🎉' : 'Gewonnen! 🎉')
-      : (game.mode === 'franken' ? 'Ach du ärmer Wurm …' : 'Schade!')));
+      ? (isFranken() ? 'Gwunna! 🎉' : 'Gewonnen! 🎉')
+      : (isFranken() ? 'Ach du ärmer Wurm …' : 'Schade!')));
     const word = h('div', 'result-word');
     for (const c of lettersOf(game.answer)) word.append(h('span', 'tile correct', c));
     body.append(word);
@@ -426,10 +495,11 @@ function openResult() {
       body.append(src);
     }
   } else {
-    body.append(h('h2', null, 'Statistik'));
+    body.append(h('h2', null, game.mode === 'zufall' ? 'Zufallswort' : 'Statistik'));
   }
+  if (game.mode === 'zufall') body.append(h('p', 'small', 'Zufallswörter zählen nicht zur Statistik.'));
 
-  if (game.mode !== 'custom') {
+  if (isDaily()) {
     const st = loadStats(game.mode);
     const streak = st.lastWin != null && st.lastWin >= game.day - 1 ? st.streak : 0;
     const stats = h('div', 'stats');
@@ -475,9 +545,14 @@ function openResult() {
     countdownTimer = setInterval(tick, 1000);
   }
 
+  if (game.mode === 'zufall' || over) {
+    const again = h('button', `btn${over ? ' primary' : ''}`, '🎲 Neues Zufallswort');
+    again.onclick = () => { $('#dlg-result').close(); startRandom(); };
+    body.append(again);
+  }
   if (over) {
     const row = h('div', 'btn-row');
-    const share = h('button', 'btn primary', canNativeShare() ? 'Ergebnis teilen' : 'Ergebnis kopieren');
+    const share = h('button', game.mode === 'zufall' ? 'btn' : 'btn primary', canNativeShare() ? 'Ergebnis teilen' : 'Ergebnis kopieren');
     share.onclick = () => shareText(resultShareText());
     row.append(share);
     if (canNativeShare()) {
@@ -573,6 +648,11 @@ function initDialogs() {
   $('#btn-stats').addEventListener('click', openResult);
   $('#btn-create').addEventListener('click', openCreate);
   $('#btn-settings').addEventListener('click', openSettings);
+  $('#btn-random').addEventListener('click', () => {
+    if (game?.mode === 'zufall' && guesses.length && !isOver()
+        && !confirm('Das laufende Zufallswort abbrechen und ein neues starten?')) return;
+    startRandom();
+  });
 }
 
 
@@ -961,7 +1041,7 @@ function init() {
 
   document.querySelectorAll('.tab').forEach((t) => t.addEventListener('click', () => {
     const mode = t.dataset.mode;
-    if (mode === 'custom') return;
+    if (mode === 'custom' || mode === 'zufall') return;
     store.set('waerdl:mode', mode);
     if (location.hash) history.pushState(null, '', location.pathname + location.search);
     setupGame();
@@ -986,7 +1066,7 @@ function init() {
   addEventListener('resize', fitBoard);
   new ResizeObserver(fitBoard).observe($('#board-wrap'));
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && game && game.mode !== 'custom' && todayNumber() !== game.day) setupGame();
+    if (document.visibilityState === 'visible' && game && isDaily() && todayNumber() !== game.day) setupGame();
   });
 
   setupGame();

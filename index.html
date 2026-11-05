@@ -28,6 +28,9 @@
     <header class="topbar">
       <div class="topbar-left">
         <button class="icon-btn" id="btn-help" aria-label="Spielanleitung" title="Spielanleitung">?</button>
+        <button class="icon-btn" id="btn-random" aria-label="Zufallswort" title="Zufallswort">
+          <svg viewBox="0 0 24 24" aria-hidden="true" class="dice"><rect x="3.5" y="3.5" width="17" height="17" rx="4"/><circle cx="8.3" cy="8.3" r="1.5"/><circle cx="15.7" cy="8.3" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="8.3" cy="15.7" r="1.5"/><circle cx="15.7" cy="15.7" r="1.5"/></svg>
+        </button>
         <button class="icon-btn" id="btn-settings" aria-label="Einstellungen" title="Einstellungen">
           <svg viewBox="0 0 24 24" aria-hidden="true" class="gear"><path fill-rule="evenodd" d="M9.40 4.65 L9.91 1.71 L14.09 1.71 L14.60 4.65 L15.36 4.96 L17.80 3.25 L20.75 6.20 L19.04 8.64 L19.35 9.40 L22.29 9.91 L22.29 14.09 L19.35 14.60 L19.04 15.36 L20.75 17.80 L17.80 20.75 L15.36 19.04 L14.60 19.35 L14.09 22.29 L9.91 22.29 L9.40 19.35 L8.64 19.04 L6.20 20.75 L3.25 17.80 L4.96 15.36 L4.65 14.60 L1.71 14.09 L1.71 9.91 L4.65 9.40 L4.96 8.64 L3.25 6.20 L6.20 3.25 L8.64 4.96 Z M15.30 12 A3.3 3.3 0 1 0 8.70 12 A3.3 3.3 0 1 0 15.30 12 Z"/></svg>
         </button>
@@ -47,6 +50,7 @@
       <button role="tab" class="tab" data-mode="franken">Fränggisch</button>
       <button role="tab" class="tab" data-mode="hochdeutsch">Hochdeutsch</button>
       <button role="tab" class="tab" data-mode="custom" hidden>Eigenes</button>
+      <button role="tab" class="tab" data-mode="zufall" hidden>🎲 Zufall</button>
     </nav>
 
     <div class="infoline">
@@ -88,6 +92,7 @@
     <ul>
       <li><b>Fränggisch</b>: jeden Tag ein fränkisches Mundartwort mit fünf Buchstaben. Nach dem Spiel erfährst du, was das Wort bedeutet.</li>
       <li><b>Hochdeutsch</b>: jeden Tag ein neues Wort mit fünf Buchstaben (über 1.500 Wörter).</li>
+      <li><b>🎲 Zufallswort</b>: ein zufälliges Wort aus der gerade gewählten Liste – so oft du willst. Zählt nicht zur Statistik.</li>
       <li><b>Eigenes Rätsel</b>: über <b>＋</b> ein Wort ausdenken und den Link verschicken.</li>
     </ul>
     <p class="small">Erlaubt sind A–Z, Ä, Ö, Ü und ß. Fränkisch schreibt jedes Dorf ein bisschen anders. Wir nehmen die am weitesten verbreitete Schreibweise.</p>
