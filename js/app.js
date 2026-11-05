@@ -12,7 +12,6 @@ const KEY_ROWS = [
   [0.5, ...'YXCVBNMß', 'ENTER'],
 ];
 const KEY_WIDTH = { ENTER: 3.5, BACK: 1 };
-const HINT_AFTER = 3;
 
 // ---------- Speicher (robust gegen gesperrten localStorage) ----------
 const store = {
@@ -84,9 +83,9 @@ const canNativeShare = () => typeof navigator.share === 'function';
 // ---------- Spielzustand ----------
 let game = null;      // { mode, day, answer, tries, meaning, code, storageKey }
 let guesses = [];     // bereits abgegebene Wörter
-let current = [];     // Buchstaben der aktuellen Zeile
+let current = [];     // Buchstaben der aktuellen Zeile ('' = leeres Feld)
+let cursor = 0;       // Feld, in das der nächste Buchstabe kommt (= Länge: Zeile voll)
 let busy = false;     // während der Aufdeck-Animation
-let hintShown = false;
 
 function lettersOf(w) { return [...w]; }
 const isOver = () => isWon() || guesses.length >= game.tries;
@@ -115,8 +114,7 @@ function setupGame() {
   guesses = Array.isArray(saved?.guesses)
     ? saved.guesses.filter((g) => lettersOf(g).length === lettersOf(game.answer).length && isValidWord(g)).slice(0, game.tries)
     : [];
-  hintShown = !!saved?.hint;
-  current = [];
+  resetCurrent();
   busy = false;
 
   document.querySelectorAll('.tab').forEach((t) => {
@@ -124,6 +122,7 @@ function setupGame() {
     if (t.dataset.mode === 'custom') t.hidden = mode !== 'custom';
   });
   renderBoard();
+  renderCurrent();
   renderKeyboardState();
   updateInfo();
   if (isOver()) setTimeout(() => openResult(), 400);
@@ -131,7 +130,7 @@ function setupGame() {
 
 function save() {
   const prev = store.get(game.storageKey, {});
-  store.set(game.storageKey, { ...prev, guesses, hint: hintShown });
+  store.set(game.storageKey, { ...prev, guesses });
 }
 
 function updateInfo() {
@@ -142,8 +141,6 @@ function updateInfo() {
     custom: `Eigenes Rätsel · ${len} Buchstaben · ${game.tries} Versuche`,
   };
   $('#info-text').textContent = texts[game.mode];
-  const hintBtn = $('#btn-hint');
-  hintBtn.hidden = !(game.meaning && guesses.length >= HINT_AFTER && !isOver());
 }
 
 // ---------- Darstellung ----------
@@ -192,15 +189,40 @@ function currentRow() {
   return $('#board').children[guesses.length];
 }
 
+function resetCurrent() {
+  current = Array(lettersOf(game.answer).length).fill('');
+  cursor = 0;
+}
+
 function renderCurrent() {
   const row = currentRow();
   if (!row) return;
+  const active = !busy && !isOver();
   [...row.children].forEach((tile, i) => {
     const ch = current[i] || '';
     if (tile.textContent !== ch) {
       tile.textContent = ch;
       tile.classList.toggle('filled', !!ch);
     }
+    tile.classList.toggle('cursor', active && i === cursor);
+  });
+  row.classList.toggle('editable', active);
+}
+
+/** Nächstes freies Feld hinter pos, sonst das erste freie davor, sonst "voll" (= Länge). */
+function nextFree(pos) {
+  let i = current.indexOf('', pos + 1);
+  if (i < 0) i = current.indexOf('');
+  return i < 0 ? current.length : i;
+}
+
+function initBoardTaps() {
+  $('#board').addEventListener('click', (e) => {
+    const tile = e.target.closest('.tile');
+    const row = currentRow();
+    if (!tile || !row || tile.parentElement !== row || busy || isOver()) return;
+    cursor = [...row.children].indexOf(tile);
+    renderCurrent();
   });
 }
 
@@ -258,9 +280,16 @@ function handleKey(key) {
   if (!game || busy || isOver()) return;
   const len = lettersOf(game.answer).length;
   if (key === 'ENTER') return submit();
-  if (key === 'BACK') { current.pop(); return renderCurrent(); }
-  if (ALPHABET.includes(key) && current.length < len) {
-    current.push(key);
+  if (key === 'BACK') {
+    if (cursor < len && current[cursor]) current[cursor] = '';     // markiertes Feld leeren
+    else if (cursor > 0) { cursor--; current[cursor] = ''; }        // sonst links davon löschen
+    return renderCurrent();
+  }
+  if (key === 'LEFT') { cursor = Math.max(0, Math.min(cursor, len) - 1); return renderCurrent(); }
+  if (key === 'RIGHT') { cursor = Math.min(len - 1, cursor + 1); return renderCurrent(); }
+  if (ALPHABET.includes(key) && cursor < len) {
+    current[cursor] = key;
+    cursor = nextFree(cursor);
     renderCurrent();
   }
 }
@@ -279,9 +308,11 @@ const PRAISE = {
 
 function submit() {
   const len = lettersOf(game.answer).length;
-  if (current.length < len) {
+  if (current.includes('')) {
     shakeRow();
     toast('Zu wenig Buchstaben');
+    cursor = current.indexOf('');
+    renderCurrent();
     return;
   }
   const guess = current.join('');
@@ -290,6 +321,8 @@ function submit() {
   const tiles = [...row.children];
   const step = Math.min(280, 1600 / len);
   busy = true;
+  row.classList.remove('editable');
+  tiles.forEach((t) => t.classList.remove('cursor'));
 
   tiles.forEach((tile, i) => {
     setTimeout(() => {
@@ -299,13 +332,14 @@ function submit() {
   });
 
   guesses.push(guess);
-  current = [];
+  resetCurrent();
   save();
 
   setTimeout(() => {
     busy = false;
     renderKeyboardState();
     updateInfo();
+    renderCurrent(); // Schreibmarke in die nächste Zeile
     if (isWon()) {
       row.classList.add('win');
       const list = game.mode === 'franken' ? PRAISE.franken : PRAISE.default;
@@ -539,11 +573,6 @@ function initDialogs() {
   $('#btn-stats').addEventListener('click', openResult);
   $('#btn-create').addEventListener('click', openCreate);
   $('#btn-settings').addEventListener('click', openSettings);
-  $('#btn-hint').addEventListener('click', () => {
-    hintShown = true;
-    save();
-    toast(`Tipp: ${game.meaning}`, 4500);
-  });
 }
 
 
@@ -784,7 +813,7 @@ async function buildBackupCode() {
   for (const m of DAILY_MODES) {
     data.s[m] = loadStats(m);
     const g = store.get(`waerdl:${m}:${day}`, null);
-    if (g?.guesses?.length) data.g[m] = { guesses: g.guesses, hint: !!g.hint };
+    if (g?.guesses?.length) data.g[m] = { guesses: g.guesses };
   }
   const json = new TextEncoder().encode(JSON.stringify(data));
   if (typeof CompressionStream === 'function') {
@@ -821,7 +850,7 @@ async function parseBackupCode(input) {
       const g = d.g?.[m];
       if (g && Array.isArray(g.guesses)) {
         const guesses = g.guesses.filter((w) => typeof w === 'string' && isValidWord(w) && [...w].length === 5).slice(0, 6);
-        if (guesses.length) clean.g[m] = { guesses, hint: !!g.hint };
+        if (guesses.length) clean.g[m] = { guesses };
       }
     }
     return clean;
@@ -922,6 +951,7 @@ async function requestPersistentStorage() {
 // ---------- Start ----------
 function init() {
   buildKeyboard();
+  initBoardTaps();
   initDialogs();
   initCreate();
   initInstall();
@@ -943,6 +973,8 @@ function init() {
     if (e.target.closest?.('input, select, textarea')) return;
     if (e.key === 'Enter') { e.preventDefault(); handleKey('ENTER'); return; }
     if (e.key === 'Backspace') { e.preventDefault(); handleKey('BACK'); return; }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); handleKey('LEFT'); return; }
+    if (e.key === 'ArrowRight') { e.preventDefault(); handleKey('RIGHT'); return; }
     if (e.key.length === 1) {
       const c = cleanWord(e.key);
       if ([...c].length === 1) handleKey(c);

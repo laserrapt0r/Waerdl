@@ -11,13 +11,16 @@ vor, aber woanders, **Grau** = kommt nicht vor.
 ## Spielarten
 
 - **Fränggisch:** jeden Tag ein fränkisches Mundartwort mit 5 Buchstaben aus über 550 Wörtern,
-  z. B. KÄRWA, GLUMP oder MÄDLA. Ab dem dritten Versuch gibt es auf Wunsch einen Tipp, nach dem Spiel die Bedeutung.
+  z. B. KÄRWA, GLUMP oder MÄDLA. Nach dem Spiel steht die Bedeutung im Ergebnis.
 - **Hochdeutsch:** jeden Tag ein Wort mit 5 Buchstaben, ausgewählt aus über 1.500 Wörtern.
 - **Eigenes Rätsel:** ein Wort mit 3–10 Buchstaben ausdenken, die Zahl der Versuche (3–9) wählen
   und den Link verschicken. Das Wort steht verschlüsselt im Link, und der Link bleibt kurz, z. B.
   `https://laserrapt0r.github.io/Waerdl/#84QjHx3`.
 
 Erlaubt sind nur die Buchstaben A–Z, Ä, Ö, Ü und ß.
+
+Buchstaben lassen sich in beliebiger Reihenfolge eintragen: Ein Tipp auf ein Feld der aktuellen
+Zeile setzt die Schreibmarke dorthin (am PC auch mit den Pfeiltasten ← →).
 
 ## Weitere Funktionen
 
