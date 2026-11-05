@@ -11,6 +11,7 @@
   --correct: #2f7dd1;
   --present: #e8892f;
   --on-color: #ffffff;
+  --highlight: rgba(47, 125, 209, .13);
   --shadow: 0 10px 40px rgba(20, 24, 40, .25);
   color-scheme: light;
 }
@@ -27,6 +28,7 @@
     --absent: #3b4253;
     --correct: #2f7dd1;
     --present: #e0832b;
+    --highlight: rgba(90, 160, 240, .20);
     --shadow: 0 10px 40px rgba(0, 0, 0, .6);
     color-scheme: dark;
   }
@@ -34,7 +36,7 @@
 :root[data-theme="dark"] {
   --bg: #121521; --surface: #1c2030; --text: #eef0f6; --muted: #9aa2b5; --border: #353c50;
   --border-filled: #6b7490; --key: #4a5268; --key-text: #eef0f6; --absent: #3b4253;
-  --present: #e0832b; color-scheme: dark;
+  --present: #e0832b; --highlight: rgba(90, 160, 240, .20); color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -374,7 +376,4 @@ input:focus, select:focus { outline: none; border-color: var(--correct); }
 
 /* Schreibmarke in der aktuellen Zeile: Feld antippen, um dort einzutragen */
 .row.editable .tile { cursor: pointer; }
-.tile.cursor {
-  border-color: var(--correct);
-  box-shadow: inset 0 calc(var(--tile) * -0.08) 0 var(--correct);
-}
+.tile.cursor { background: var(--highlight); }
